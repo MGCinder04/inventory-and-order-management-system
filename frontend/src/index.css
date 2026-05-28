@@ -2,162 +2,323 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design-system tokens ───────────────────────────────────────────────── */
+:root {
+  --surface-base:     #ffffff;
+  --surface-card:     #f9fafb;
+  --surface-elevated: #f3f4f6;
+  --border-subtle:    rgba(0,0,0,0.07);
+  --accent-indigo:    #5868ff;
+  --accent-lime:      #a3e635;
+  --accent-amber:     #f5d547;
+  --accent-cyan:      #3dd5f3;
+}
+.dark {
+  --surface-base:     #0a0b0f;
+  --surface-card:     #141516;
+  --surface-elevated: #1e2029;
+  --border-subtle:    rgba(255,255,255,0.06);
+  --accent-indigo:    #6875ff;
+}
+
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-200;
+    background-color: var(--surface-base);
+    color: #111827;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  .dark body, .dark {
+    color: #f2f4f8;
   }
 }
 
-/* ── Primary action button — gradient animation ─────────────────────────── */
-.button {
-  width: fit-content;
-  display: flex;
-  align-items: center;
-  padding: 0.75em 1.25rem;
-  cursor: pointer;
-  gap: 0.4rem;
-  font-weight: bold;
-  font-size: 0.875rem;
-  border-radius: 30px;
-  text-shadow: 2px 2px 3px rgb(136 0 136 / 50%);
-  background: linear-gradient(
-    15deg,
-    #880088, #aa2068, #cc3f47, #de6f3d,
-    #f09f33, #de6f3d, #cc3f47, #aa2068, #880088
-  ) no-repeat;
-  background-size: 300%;
-  color: #fff;
-  border: none;
-  background-position: left center;
-  box-shadow: 0 30px 10px -20px rgba(0, 0, 0, 0.2);
-  transition: background 0.3s ease;
-  white-space: nowrap;
+/* ── Page-entry animation ───────────────────────────────────────────────── */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.button:hover {
-  background-size: 320%;
-  background-position: right center;
-}
-.button:hover svg {
-  fill: #fff;
-}
-.button svg {
-  width: 18px;
-  fill: #f09f33;
-  transition: 0.3s ease;
-}
-.button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.dark .button {
-  box-shadow: 0 30px 10px -20px rgba(0, 0, 0, 0.4);
+.page-transition {
+  animation: page-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Dashboard stat card ─────────────────────────────────────────────────── */
-.card {
-  padding: 1rem;
-  background-color: #fff;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  max-width: 320px;
-  border-radius: 20px;
+/* ── Modal overlay + entrance ───────────────────────────────────────────── */
+.modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center px-4;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
 }
-.dark .card {
-  background-color: #1f2937;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+@keyframes modal-enter {
+  from { opacity: 0; transform: scale(0.94) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-.title {
+.modal-content {
+  animation: modal-enter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Animated CTA button ────────────────────────────────────────────────── */
+.animated-button {
+  position: relative;
   display: flex;
   align-items: center;
+  gap: 4px;
+  padding: 12px 28px;
+  border: 4px solid transparent;
+  font-size: 14px;
+  background-color: transparent;
+  border-radius: 100px;
+  font-weight: 600;
+  color: #1f387e;
+  box-shadow: 0 0 0 2px #1f387e;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  white-space: nowrap;
 }
-.title span {
-  position: relative;
-  padding: 0.5rem;
-  background-color: #10b981;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 9999px;
-  flex-shrink: 0;
+.dark .animated-button {
+  color: #a5b4fc;
+  box-shadow: 0 0 0 2px #6875ff;
 }
-.title span svg {
+.animated-button svg {
+  position: absolute;
+  width: 20px;
+  fill: #1f387e;
+  z-index: 9;
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.dark .animated-button svg { fill: #a5b4fc; }
+.animated-button .arr-1 { right: 16px; }
+.animated-button .arr-2 { left: -25%; }
+.animated-button .circle {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #ffffff;
-  height: 1rem;
-  width: 1rem;
+  width: 20px;
+  height: 20px;
+  background-color: #c5e5e4;
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
 }
-.title-text {
-  margin-left: 0.5rem;
-  color: #374151;
-  font-size: 15px;
-  font-weight: 500;
-}
-.dark .title-text {
-  color: #e5e7eb;
-}
-.percent {
-  margin-left: 0.5rem;
-  color: #02972f;
-  font-weight: 600;
-  display: flex;
-  font-size: 0.75rem;
-}
-.data {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-.data p {
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
-  color: #1f2937;
-  font-size: 2.25rem;
-  line-height: 2.5rem;
-  font-weight: 700;
-  text-align: left;
-}
-.dark .data p {
-  color: #f9fafb;
-}
-.data .range {
+.dark .animated-button .circle { background-color: #312e81; }
+.animated-button .btn-text {
   position: relative;
-  background-color: #e5e7eb;
-  width: 100%;
-  height: 0.5rem;
-  border-radius: 0.25rem;
+  z-index: 1;
+  transform: translateX(-12px);
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
 }
-.dark .data .range {
-  background-color: #374151;
+.animated-button:hover {
+  box-shadow: 0 0 0 12px transparent;
+  color: #212121;
+  border-radius: 12px;
 }
-.data .range .fill {
+.dark .animated-button:hover { color: #f2f4f8; }
+.animated-button:hover .arr-1 { right: -25%; }
+.animated-button:hover .arr-2 { left: 16px; }
+.animated-button:hover .btn-text { transform: translateX(12px); }
+.animated-button:hover svg { fill: #1f387e; }
+.dark .animated-button:hover svg { fill: #c7d2fe; }
+.animated-button:active { scale: 0.95; box-shadow: 0 0 0 4px #a5b4fc; }
+.animated-button:hover .circle { width: 240px; height: 240px; opacity: 1; }
+.animated-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Theme switch (stars · moon · cloud) ───────────────────────────────── */
+.switch {
+  font-size: 17px;
+  position: relative;
+  display: inline-block;
+  width: 4em;
+  height: 2.2em;
+  border-radius: 30px;
+  box-shadow: 0 0 10px rgba(0,0,0,.15);
+  cursor: pointer;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
   position: absolute;
-  top: 0;
-  left: 0;
-  background-color: #10b981;
-  width: 76%;
-  height: 100%;
-  border-radius: 0.25rem;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #2a2a2a;
+  transition: 0.4s;
+  border-radius: 30px;
+  overflow: hidden;
 }
-
-/* ── Modal overlay & entrance animation ─────────────────────────────────── */
-.modal-overlay {
-  @apply fixed inset-0 z-50 flex items-center justify-center px-4;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 1.2em;
+  width: 1.2em;
+  border-radius: 20px;
+  left: 0.5em;
+  bottom: 0.5em;
+  transition: 0.4s;
+  transition-timing-function: cubic-bezier(0.81, -0.04, 0.38, 1.5);
+  box-shadow: inset 8px -4px 0px 0px #fff;
 }
+.switch input:checked + .slider { background-color: #00a6ff; }
+.switch input:checked + .slider:before {
+  transform: translateX(1.8em);
+  box-shadow: inset 15px -4px 0px 15px #ffcf48;
+}
+.star {
+  background-color: #fff;
+  border-radius: 50%;
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  transition: all 0.4s;
+}
+.star_1 { left: 2.5em; top: 0.5em; }
+.star_2 { left: 2.2em; top: 1.2em; }
+.star_3 { left: 3em;   top: 0.9em; }
+.switch input:checked ~ .slider .star { opacity: 0; }
+.cloud {
+  width: 3.5em;
+  position: absolute;
+  bottom: -1.4em;
+  left: -1.1em;
+  opacity: 0;
+  transition: all 0.4s;
+  fill: white;
+}
+.switch input:checked ~ .slider .cloud { opacity: 1; }
 
-@keyframes modal-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(-6px);
+/* ── Typewriter keyboard loading animation ──────────────────────────────── */
+.typewriter-loader {
+  --blue: #5c86ff;
+  --blue-dark: #275efe;
+  --key: #fff;
+  --paper: #eef0fd;
+  --text: #d3d4ec;
+  --tool: #fbc56c;
+  --duration: 3s;
+  position: relative;
+  animation: bounce-loader var(--duration) linear infinite;
+}
+.typewriter-loader .slide {
+  width: 92px; height: 20px;
+  border-radius: 3px;
+  margin-left: 14px;
+  transform: translateX(14px);
+  background: linear-gradient(var(--blue), var(--blue-dark));
+  animation: slide-loader var(--duration) ease infinite;
+}
+.typewriter-loader .slide:before,
+.typewriter-loader .slide:after,
+.typewriter-loader .slide i:before { content: ""; position: absolute; background: var(--tool); }
+.typewriter-loader .slide:before { width: 2px; height: 8px; top: 6px; left: 100%; }
+.typewriter-loader .slide:after  { left: 94px; top: 3px; height: 14px; width: 6px; border-radius: 3px; }
+.typewriter-loader .slide i { display: block; position: absolute; right: 100%; width: 6px; height: 4px; top: 4px; background: var(--tool); }
+.typewriter-loader .slide i:before { right: 100%; top: -2px; width: 4px; border-radius: 2px; height: 14px; }
+.typewriter-loader .paper {
+  position: absolute; left: 24px; top: -26px;
+  width: 40px; height: 46px; border-radius: 5px;
+  background: var(--paper);
+  transform: translateY(46px);
+  animation: paper-loader var(--duration) linear infinite;
+}
+.typewriter-loader .paper:before {
+  content: ""; position: absolute;
+  left: 6px; right: 6px; top: 7px;
+  border-radius: 2px; height: 4px;
+  transform: scaleY(0.8);
+  background: var(--text);
+  box-shadow: 0 12px 0 var(--text), 0 24px 0 var(--text), 0 36px 0 var(--text);
+}
+.typewriter-loader .keyboard {
+  width: 120px; height: 56px;
+  margin-top: -10px; z-index: 1; position: relative;
+}
+.typewriter-loader .keyboard:before,
+.typewriter-loader .keyboard:after { content: ""; position: absolute; }
+.typewriter-loader .keyboard:before {
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  transform: perspective(10px) rotateX(2deg);
+  transform-origin: 50% 100%;
+}
+.typewriter-loader .keyboard:after {
+  left: 2px; top: 25px; width: 11px; height: 4px;
+  border-radius: 2px;
+  box-shadow: 15px 0 0 var(--key),30px 0 0 var(--key),45px 0 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 10px 0 var(--key),37px 10px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 10px 0 var(--key);
+  animation: keyboard-loader var(--duration) linear infinite;
+}
+@keyframes bounce-loader {
+  85%,92%,100% { transform: translateY(0); }
+  89% { transform: translateY(-4px); }
+  95% { transform: translateY(2px); }
+}
+@keyframes slide-loader {
+  5%                { transform: translateX(14px); }
+  15%,30%           { transform: translateX(6px); }
+  40%,55%           { transform: translateX(0); }
+  65%,70%           { transform: translateX(-4px); }
+  80%,89%           { transform: translateX(-12px); }
+  100%              { transform: translateX(14px); }
+}
+@keyframes paper-loader {
+  5%                { transform: translateY(46px); }
+  20%,30%           { transform: translateY(34px); }
+  40%,55%           { transform: translateY(22px); }
+  65%,70%           { transform: translateY(10px); }
+  80%,85%           { transform: translateY(0); }
+  92%,100%          { transform: translateY(46px); }
+}
+@keyframes keyboard-loader {
+  5%,12%,21%,30%,39%,48%,57%,66%,75%,84% {
+    box-shadow: 15px 0 0 var(--key),30px 0 0 var(--key),45px 0 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 10px 0 var(--key),37px 10px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 10px 0 var(--key);
   }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  9%  { box-shadow: 15px 2px 0 var(--key),30px 0 0 var(--key),45px 0 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 10px 0 var(--key),37px 10px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 10px 0 var(--key); }
+  18% { box-shadow: 15px 0 0 var(--key),30px 0 0 var(--key),45px 0 0 var(--key),60px 2px 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 10px 0 var(--key),37px 10px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 10px 0 var(--key); }
+  27% { box-shadow: 15px 0 0 var(--key),30px 0 0 var(--key),45px 0 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 12px 0 var(--key),37px 10px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 10px 0 var(--key); }
+  36% { box-shadow: 15px 0 0 var(--key),30px 0 0 var(--key),45px 0 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 10px 0 var(--key),37px 10px 0 var(--key),52px 12px 0 var(--key),60px 12px 0 var(--key),68px 12px 0 var(--key),83px 10px 0 var(--key); }
+  45% { box-shadow: 15px 0 0 var(--key),30px 0 0 var(--key),45px 0 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 2px 0 var(--key),22px 10px 0 var(--key),37px 10px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 10px 0 var(--key); }
+  54% { box-shadow: 15px 0 0 var(--key),30px 2px 0 var(--key),45px 0 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 10px 0 var(--key),37px 10px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 10px 0 var(--key); }
+  63% { box-shadow: 15px 0 0 var(--key),30px 0 0 var(--key),45px 0 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 10px 0 var(--key),37px 10px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 12px 0 var(--key); }
+  72% { box-shadow: 15px 0 0 var(--key),30px 0 0 var(--key),45px 2px 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 10px 0 var(--key),37px 10px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 10px 0 var(--key); }
+  81% { box-shadow: 15px 0 0 var(--key),30px 0 0 var(--key),45px 0 0 var(--key),60px 0 0 var(--key),75px 0 0 var(--key),90px 0 0 var(--key),22px 10px 0 var(--key),37px 12px 0 var(--key),52px 10px 0 var(--key),60px 10px 0 var(--key),68px 10px 0 var(--key),83px 10px 0 var(--key); }
 }
 
-.modal-content {
-  animation: modal-enter 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+/* ── Premium pill input ─────────────────────────────────────────────────── */
+.input-premium {
+  background: none;
+  border: none;
+  outline: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 9999px;
+  box-shadow: inset 2px 5px 10px rgb(5,5,5);
+  color: #fff;
+  width: 100%;
 }
+
+/* ── Card hover lift ────────────────────────────────────────────────────── */
+.card-lift {
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15);
+}
+.dark .card-lift:hover {
+  box-shadow: 0 20px 40px -12px rgba(0,0,0,0.5);
+}
+
+/* ── Sidebar transition ─────────────────────────────────────────────────── */
+.sidebar-transition {
+  transition: width 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* ── Legacy .card / .button kept for compatibility ──────────────────────── */
+.card {
+  padding: 1rem;
+  background-color: #fff;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+  border-radius: 20px;
+}
+.dark .card { background-color: #1e2029; }

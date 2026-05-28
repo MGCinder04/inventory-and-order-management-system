@@ -6,25 +6,26 @@ import {
 } from 'recharts'
 import { BarChart3, PieChart as PieIcon, TrendingUp } from 'lucide-react'
 import { analyticsApi } from '../api/analytics'
+import { PageLoader } from '../components/PageLoader'
+import { TypewriterText } from '../components/TypewriterText'
 import { useToast } from '../hooks/useToast'
 import { formatCurrency } from '../utils/formatters'
 
 const STATUS_COLORS = {
-  pending: '#f59e0b',
-  confirmed: '#3b82f6',
-  shipped: '#8b5cf6',
+  pending:   '#f59e0b',
+  confirmed: '#5868ff',
+  shipped:   '#8b5cf6',
   delivered: '#10b981',
   cancelled: '#ef4444',
 }
-
 const FALLBACK_CHART_COLOR = '#6b7280'
 
 function ChartPanel({ icon: Icon, title, children }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className="bg-white dark:bg-[#1e2029] rounded-2xl p-5 border border-gray-100 dark:border-white/[0.06] shadow-sm card-lift">
       <div className="flex items-center gap-2 mb-4">
-        <Icon size={16} className="text-blue-500" />
-        <h2 className="font-semibold text-gray-800 dark:text-gray-200">{title}</h2>
+        <Icon size={15} className="text-indigo-500" />
+        <h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">{title}</h2>
       </div>
       {children}
     </div>
@@ -50,81 +51,62 @@ export default function Analytics() {
     loadAnalytics()
   }, [addToast])
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-64 text-gray-400">Loading…</div>
+  if (isLoading) return <PageLoader message="Loading analytics…" />
+
+  const dailyRevenueData = (summary?.daily_revenue ?? []).map((e) => ({ date: e.date, revenue: Number(e.revenue) }))
+  const statusPieData = (summary?.orders_by_status ?? []).map((e) => ({ name: e.status, value: e.count }))
+  const topProductsData = (summary?.top_products ?? []).map((p) => ({ name: p.name, sold: p.total_sold }))
+
+  const tooltipStyle = {
+    borderRadius: '0.75rem',
+    border: 'none',
+    boxShadow: '0 10px 30px -5px rgba(0,0,0,0.2)',
+    backgroundColor: '#1e2029',
+    color: '#f2f4f8',
   }
-
-  const dailyRevenueData = (summary?.daily_revenue ?? []).map((entry) => ({
-    date: entry.date,
-    revenue: Number(entry.revenue),
-  }))
-
-  const statusPieData = (summary?.orders_by_status ?? []).map((entry) => ({
-    name: entry.status,
-    value: entry.count,
-  }))
-
-  const topProductsData = (summary?.top_products ?? []).map((p) => ({
-    name: p.name,
-    sold: p.total_sold,
-  }))
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics</h1>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <TypewriterText text="Analytics" speed={60} />
+        </h1>
+        <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Last 30 days</p>
+      </div>
 
-      <ChartPanel icon={TrendingUp} title="Daily Revenue — last 30 days">
+      <ChartPanel icon={TrendingUp} title="Daily Revenue">
         {dailyRevenueData.length > 0 ? (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={dailyRevenueData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip
-                formatter={(value) => [formatCurrency(value), 'Revenue']}
-                contentStyle={{ borderRadius: '0.5rem', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,.1)' }}
-              />
-              <Line
-                type="monotone"
-                dataKey="revenue"
-                stroke="#3b82f6"
-                strokeWidth={2.5}
-                dot={false}
-                activeDot={{ r: 5, stroke: '#3b82f6', strokeWidth: 2, fill: '#fff' }}
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#6b7280' }} />
+              <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} />
+              <Tooltip formatter={(v) => [formatCurrency(v), 'Revenue']} contentStyle={tooltipStyle} />
+              <Line type="monotone" dataKey="revenue" stroke="#5868ff" strokeWidth={2.5} dot={false}
+                activeDot={{ r: 5, stroke: '#5868ff', strokeWidth: 2, fill: '#fff' }} />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-sm text-gray-400 py-8 text-center">No revenue data for the last 30 days.</p>
+          <p className="text-sm text-gray-400 py-10 text-center">No revenue data for the last 30 days.</p>
         )}
       </ChartPanel>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <ChartPanel icon={PieIcon} title="Orders by Status">
           {statusPieData.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
-                <Pie
-                  data={statusPieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  labelLine={false}
-                >
+                <Pie data={statusPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
                   {statusPieData.map((entry) => (
                     <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? FALLBACK_CHART_COLOR} />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{ borderRadius: '0.5rem', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,.1)' }}
-                />
+                <Tooltip contentStyle={tooltipStyle} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-gray-400 py-8 text-center">No order data yet.</p>
+            <p className="text-sm text-gray-400 py-10 text-center">No order data yet.</p>
           )}
         </ChartPanel>
 
@@ -132,17 +114,15 @@ export default function Analytics() {
           {topProductsData.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={topProductsData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ borderRadius: '0.5rem', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,.1)' }}
-                />
-                <Bar dataKey="sold" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis type="number" tick={{ fontSize: 11, fill: '#6b7280' }} />
+                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11, fill: '#6b7280' }} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="sold" fill="#8b5cf6" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-gray-400 py-8 text-center">No sales data yet.</p>
+            <p className="text-sm text-gray-400 py-10 text-center">No sales data yet.</p>
           )}
         </ChartPanel>
       </div>
