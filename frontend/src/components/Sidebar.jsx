@@ -34,7 +34,7 @@ export function Sidebar() {
       >
         {!isCollapsed && (
           <span className="font-bold text-gray-900 dark:text-white text-sm tracking-tight select-none">
-            InvenOrder
+            OrderHub
           </span>
         )}
         <button

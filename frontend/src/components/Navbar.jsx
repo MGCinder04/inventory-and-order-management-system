@@ -15,7 +15,7 @@ export function Navbar() {
           <Menu size={20} />
         </button>
         <span className="md:hidden font-bold text-gray-900 dark:text-white text-sm tracking-tight">
-          InvenOrder
+          OrderHub
         </span>
       </div>
       <div className="flex items-center gap-3">
