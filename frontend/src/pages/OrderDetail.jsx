@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronRight, CheckCircle2 } from 'lucide-react'
 import { ordersApi } from '../api/orders'
 import { useToast } from '../hooks/useToast'
+import { formatCurrency } from '../utils/formatters'
 
 const STATUS_SEQUENCE = ['pending', 'confirmed', 'shipped', 'delivered']
 
@@ -86,98 +87,110 @@ export default function OrderDetail() {
   const currentStepIndex = STATUS_SEQUENCE.indexOf(order.status)
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl">
+    <div className="p-6 space-y-5 max-w-2xl">
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate('/orders')}
-          className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded transition-colors"
+          className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           <ArrowLeft size={18} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Order #{order.id}</h1>
-        <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${STATUS_BADGE_CLASSES[order.status] ?? ''}`}>
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${STATUS_BADGE_CLASSES[order.status] ?? ''}`}>
           {order.status}
         </span>
       </div>
 
       {order.status !== 'cancelled' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
-          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4 text-sm">Progress</h2>
-          <div className="flex items-center gap-1">
-            {STATUS_SEQUENCE.map((step, index) => (
-              <div key={step} className="flex items-center gap-1 flex-1">
-                <div className={`flex-1 text-center`}>
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold mx-auto mb-1
-                    ${index <= currentStepIndex
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}`}>
-                    {index + 1}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Progress</p>
+          <div className="flex items-center">
+            {STATUS_SEQUENCE.map((step, index) => {
+              const isCompleted = index <= currentStepIndex
+              const isCurrent = index === currentStepIndex
+              return (
+                <div key={step} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center flex-1">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1.5 transition-colors
+                      ${isCompleted ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400'}`}>
+                      {isCompleted && !isCurrent
+                        ? <CheckCircle2 size={16} />
+                        : <span className="text-xs font-bold">{index + 1}</span>
+                      }
+                    </div>
+                    <span className={`text-xs capitalize font-medium transition-colors
+                      ${isCompleted ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>
+                      {step}
+                    </span>
                   </div>
-                  <span className={`text-xs capitalize ${index <= currentStepIndex ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-400'}`}>
-                    {step}
-                  </span>
+                  {index < STATUS_SEQUENCE.length - 1 && (
+                    <div className={`h-0.5 w-full mx-1 mb-5 rounded-full transition-colors
+                      ${index < currentStepIndex ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`} />
+                  )}
                 </div>
-                {index < STATUS_SEQUENCE.length - 1 && (
-                  <ChevronRight size={14} className={`text-gray-300 dark:text-gray-600 mb-5 shrink-0`} />
-                )}
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-200">Customer</h2>
-        <p className="text-gray-700 dark:text-gray-300">{order.customer?.full_name}</p>
-        <p className="text-sm text-gray-400">{order.customer?.email}</p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Customer</p>
+        <p className="font-semibold text-gray-800 dark:text-gray-200">{order.customer?.full_name}</p>
+        <p className="text-sm text-gray-400 mt-0.5">{order.customer?.email}</p>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Placed {new Date(order.created_at).toLocaleDateString('en-IN', { dateStyle: 'long' })}
+        </p>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Items</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Items</p>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 dark:border-gray-700">
-              <th className="text-left py-2 font-medium text-gray-500 dark:text-gray-400">Product</th>
-              <th className="text-right py-2 font-medium text-gray-500 dark:text-gray-400">Unit Price</th>
-              <th className="text-right py-2 font-medium text-gray-500 dark:text-gray-400">Qty</th>
-              <th className="text-right py-2 font-medium text-gray-500 dark:text-gray-400">Subtotal</th>
+              <th className="text-left pb-2 font-medium text-gray-500 dark:text-gray-400">Product</th>
+              <th className="text-right pb-2 font-medium text-gray-500 dark:text-gray-400">Unit Price</th>
+              <th className="text-right pb-2 font-medium text-gray-500 dark:text-gray-400">Qty</th>
+              <th className="text-right pb-2 font-medium text-gray-500 dark:text-gray-400">Subtotal</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {order.items.map((item) => (
-              <tr key={item.id}>
-                <td className="py-2 text-gray-900 dark:text-gray-100">
+              <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-150">
+                <td className="py-2.5 text-gray-900 dark:text-gray-100">
                   {item.product?.name ?? `Product #${item.product_id}`}
-                  <span className="text-xs text-gray-400 ml-1 font-mono">{item.product?.sku}</span>
+                  {item.product?.sku && (
+                    <span className="text-xs text-gray-400 ml-1.5 font-mono">{item.product.sku}</span>
+                  )}
                 </td>
-                <td className="py-2 text-right text-gray-600 dark:text-gray-400">
-                  ${Number(item.unit_price).toFixed(2)}
+                <td className="py-2.5 text-right text-gray-600 dark:text-gray-400 tabular-nums">
+                  {formatCurrency(item.unit_price)}
                 </td>
-                <td className="py-2 text-right text-gray-900 dark:text-gray-100">{item.quantity}</td>
-                <td className="py-2 text-right text-gray-900 dark:text-gray-100 font-medium">
-                  ${(Number(item.unit_price) * item.quantity).toFixed(2)}
+                <td className="py-2.5 text-right text-gray-900 dark:text-gray-100 tabular-nums">
+                  {item.quantity}
+                </td>
+                <td className="py-2.5 text-right text-gray-900 dark:text-gray-100 font-medium tabular-nums">
+                  {formatCurrency(Number(item.unit_price) * item.quantity)}
                 </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr className="border-t border-gray-200 dark:border-gray-700">
-              <td colSpan={3} className="pt-3 text-right font-semibold text-gray-700 dark:text-gray-300">Total</td>
-              <td className="pt-3 text-right font-bold text-gray-900 dark:text-white text-base">
-                ${Number(order.total_amount).toFixed(2)}
+            <tr className="border-t-2 border-gray-200 dark:border-gray-600">
+              <td colSpan={3} className="pt-3 text-right font-semibold text-gray-700 dark:text-gray-300">
+                Order Total
+              </td>
+              <td className="pt-3 text-right font-extrabold text-gray-900 dark:text-white text-lg tabular-nums">
+                {formatCurrency(order.total_amount)}
               </td>
             </tr>
           </tfoot>
         </table>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         {nextStatus && (
-          <button
-            onClick={advanceStatus}
-            disabled={isUpdating}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 capitalize"
-          >
+          <button onClick={advanceStatus} disabled={isUpdating} className="button capitalize">
             {isUpdating ? 'Updating…' : `Mark as ${nextStatus}`}
           </button>
         )}
@@ -185,7 +198,7 @@ export default function OrderDetail() {
           <button
             onClick={cancelOrder}
             disabled={isUpdating}
-            className="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-full text-sm font-semibold transition-colors disabled:opacity-50"
           >
             Cancel Order
           </button>
