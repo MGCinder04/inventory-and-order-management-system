@@ -9,6 +9,7 @@ import { useSearch } from '../hooks/useSearch'
 import { isValidEmail, buildPhoneValidationError } from '../utils/validators'
 
 const PAGE_SIZE = 20
+const CUSTOMER_DELETE_FALLBACK_ERROR = 'Failed to delete customer'
 
 const EMPTY_CREATE_FORM = { full_name: '', email: '', phone: '' }
 const EMPTY_EDIT_FORM = { full_name: '', phone: '' }
@@ -137,7 +138,7 @@ export default function Customers() {
       addToast('Customer deleted')
       loadCustomers()
     } catch (error) {
-      addToast(error.response?.data?.detail || 'Failed to delete customer', 'error')
+      addToast(error.response?.data?.detail || CUSTOMER_DELETE_FALLBACK_ERROR, 'error')
     }
   }
 
