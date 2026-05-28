@@ -32,7 +32,9 @@ class Order(Base):
     )
     total_amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     status: Mapped[OrderStatus] = mapped_column(
-        Enum(OrderStatus), nullable=False, server_default=OrderStatus.PENDING.value
+        Enum(OrderStatus, values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        server_default=OrderStatus.PENDING.value,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=text("now()"), nullable=False
